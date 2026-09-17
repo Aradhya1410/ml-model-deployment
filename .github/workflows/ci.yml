@@ -1,20 +1,3 @@
-# .github/workflows/ci.yml
-#
-# This is our CI/CD pipeline. GitHub automatically runs this file
-# every time you push code or open a pull request.
-#
-# What it does, in plain English:
-#   1. Gets a clean Ubuntu machine from GitHub.
-#   2. Downloads (checks out) our repo's code onto it.
-#   3. Installs Python.
-#   4. Installs our project's dependencies.
-#   5. Trains the model (so model.pkl exists for tests).
-#   6. Runs our automated tests.
-#   7. If tests pass, builds the Docker image to prove it builds cleanly.
-#
-# If any step fails, the whole workflow fails and GitHub shows a red X
-# on your commit/PR — this is exactly what "CI" (Continuous Integration) means.
-
 name: CI
 
 on:
@@ -45,6 +28,8 @@ jobs:
         run: python model/train_model.py
 
       - name: Run tests
+        env:
+          PYTHONPATH: .
         run: pytest -v
 
       - name: Build Docker image
