@@ -1,0 +1,60 @@
+# docker-compose.yml
+#
+# This file lets us start THREE containers together with one command:
+#   1. api        -> our FastAPI ML prediction service
+#   2. prometheus -> scrapes /metrics from the api container
+#   3. grafana    -> visualizes the metrics that Prometheus collected
+#
+# Run everything with:
+#   docker compose up --build
+#
+# Stop everything with:
+#   docker compose down
+
+version: "3.9"
+
+services:
+  api:
+    build: .                     # Build the image using our Dockerfile in this folder
+    container_name: ml-api
+    ports:
+      - "8000:8000"               # host_port:container_port
+    restart: unless-stopped
+    networks:
+      - ml-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      # Mount our custom scrape config into the container
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    networks:
+      - ml-network
+    depends_on:
+      - api
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      # Default login for local use only. Change this for anything real.
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: unless-stopped
+    networks:
+      - ml-network
+    depends_on:
+      - prometheus
+
+# A shared virtual network so containers can reach each other BY NAME
+# (e.g. Prometheus reaches the API at "http://api:8000", not localhost).
+# This is the key Docker networking concept this project demonstrates.
+networks:
+  ml-network:
+    driver: bridge

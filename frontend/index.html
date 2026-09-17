@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Model Deployment &amp; Monitoring Pipeline</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">IC</div>
+      <div class="brand-text">
+        <span class="brand-title">Iris Pipeline</span>
+        <span class="brand-sub">MLOps Console</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-label">Menu</div>
+      <button class="nav-item is-active" data-view="dashboard">
+        <span class="nav-icon">&#9635;</span> Dashboard
+      </button>
+      <button class="nav-item" data-view="prediction">
+        <span class="nav-icon">&#9673;</span> Model Prediction
+      </button>
+      <button class="nav-item" data-view="health">
+        <span class="nav-icon">&#9724;</span> System Health
+      </button>
+      <button class="nav-item" data-view="metrics">
+        <span class="nav-icon">&#9776;</span> API Metrics
+      </button>
+    </nav>
+
+    <div class="nav-label">Technology</div>
+    <ul class="tech-list">
+      <li><span class="tech-dot" style="--c:#009688"></span>FastAPI</li>
+      <li><span class="tech-dot" style="--c:#3776ab"></span>Python</li>
+      <li><span class="tech-dot" style="--c:#2496ed"></span>Docker</li>
+      <li><span class="tech-dot" style="--c:#e6522c"></span>Prometheus</li>
+      <li><span class="tech-dot" style="--c:#f46800"></span>Grafana</li>
+      <li><span class="tech-dot" style="--c:#8b5cf6"></span>CI/CD</li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <span id="sidebarStatusDot" class="status-dot status-unknown"></span>
+      <span id="sidebarStatusText">Checking backend&hellip;</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- HEADER -->
+    <header class="topbar">
+      <div class="topbar-heading">
+        <h1>ML Model Deployment &amp; Monitoring Pipeline</h1>
+        <p>Machine Learning Inference &amp; Monitoring Dashboard</p>
+      </div>
+      <div class="topbar-meta">
+        <div class="endpoint-chip">
+          <span class="endpoint-dot"></span>
+          <span id="topbarEndpoint">http://127.0.0.1:8001</span>
+        </div>
+        <button class="btn btn-ghost" id="globalRefreshBtn">Refresh</button>
+      </div>
+    </header>
+
+    <!-- ===================== DASHBOARD VIEW ===================== -->
+    <section class="view is-active" id="view-dashboard">
+
+      <div class="grid grid-4">
+        <div class="card stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Model Status</span>
+            <span id="dashModelDot" class="status-dot status-unknown"></span>
+          </div>
+          <div class="stat-value" id="dashModelValue">Checking&hellip;</div>
+          <div class="stat-foot">Iris Classifier &middot; scikit-learn</div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-top">
+            <span class="stat-label">API Status</span>
+            <span id="dashApiDot" class="status-dot status-unknown"></span>
+          </div>
+          <div class="stat-value" id="dashApiValue">Checking&hellip;</div>
+          <div class="stat-foot" id="dashApiFoot">GET /health</div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Model Type</span>
+          </div>
+          <div class="stat-value">Iris Classifier</div>
+          <div class="stat-foot">4 input features &middot; 3 classes</div>
+        </div>
+
+        <div class="card stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Monitoring</span>
+          </div>
+          <div class="stat-value">Prometheus</div>
+          <div class="stat-foot">+ Grafana dashboards</div>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h2 class="card-title">Deployment Overview</h2>
+          <table class="kv-table">
+            <tbody>
+              <tr><td>Model</td><td>Iris Classifier</td></tr>
+              <tr><td>Backend</td><td>FastAPI</td></tr>
+              <tr><td>Monitoring</td><td>Prometheus + Grafana</td></tr>
+              <tr><td>Containerization</td><td>Docker</td></tr>
+              <tr><td>Base URL</td><td class="mono">http://127.0.0.1:8001</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">API Reference</h2>
+          <ul class="endpoint-list">
+            <li><span class="verb verb-get">GET</span><span class="mono">/health</span><span class="ep-desc">Liveness check</span></li>
+            <li><span class="verb verb-get">GET</span><span class="mono">/</span><span class="ep-desc">Service info</span></li>
+            <li><span class="verb verb-get">GET</span><span class="mono">/metrics</span><span class="ep-desc">Prometheus metrics</span></li>
+            <li><span class="verb verb-post">POST</span><span class="mono">/predict</span><span class="ep-desc">Run inference</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card banner-card" id="dashBanner" hidden>
+        <strong>Unable to connect to FastAPI backend.</strong>
+        <span>Please make sure the backend is running on port 8001.</span>
+      </div>
+    </section>
+
+    <!-- ===================== PREDICTION VIEW ===================== -->
+    <section class="view" id="view-prediction">
+      <div class="grid grid-2">
+
+        <div class="card">
+          <h2 class="card-title">Model Prediction</h2>
+          <p class="card-subtitle">Enter iris flower measurements (in centimeters) and run inference against the live model.</p>
+
+          <form id="predictForm" class="form" novalidate>
+            <div class="field">
+              <label for="sepal_length">Sepal Length</label>
+              <input type="number" step="0.01" id="sepal_length" name="sepal_length" placeholder="5.1" required>
+            </div>
+            <div class="field">
+              <label for="sepal_width">Sepal Width</label>
+              <input type="number" step="0.01" id="sepal_width" name="sepal_width" placeholder="3.5" required>
+            </div>
+            <div class="field">
+              <label for="petal_length">Petal Length</label>
+              <input type="number" step="0.01" id="petal_length" name="petal_length" placeholder="1.4" required>
+            </div>
+            <div class="field">
+              <label for="petal_width">Petal Width</label>
+              <input type="number" step="0.01" id="petal_width" name="petal_width" placeholder="0.2" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="predictBtn">
+              <span id="predictBtnLabel">Predict Species</span>
+            </button>
+          </form>
+
+          <div class="error-box" id="predictError" hidden></div>
+        </div>
+
+        <div class="card result-card">
+          <h2 class="card-title">Prediction Result</h2>
+          <div id="resultEmpty" class="empty-state">
+            <p>Submit the form to see a live prediction from the FastAPI backend.</p>
+          </div>
+
+          <div id="resultContent" class="result-content" hidden>
+            <div class="result-species">
+              <span class="result-label">Predicted Species</span>
+              <span class="result-value" id="resultSpecies">&mdash;</span>
+            </div>
+            <div class="confidence-block">
+              <div class="confidence-header">
+                <span class="result-label">Confidence</span>
+                <span class="mono" id="resultConfidenceText">&mdash;</span>
+              </div>
+              <div class="confidence-bar">
+                <div class="confidence-fill" id="resultConfidenceFill"></div>
+              </div>
+            </div>
+            <div class="result-meta">
+              <div><span>Endpoint</span><span class="mono">POST /predict</span></div>
+              <div><span>Response time</span><span class="mono" id="resultLatency">&mdash;</span></div>
+            </div>
+            <details class="raw-details">
+              <summary>Raw JSON response</summary>
+              <pre id="resultRaw" class="raw-pre"></pre>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HEALTH VIEW ===================== -->
+    <section class="view" id="view-health">
+      <div class="card health-card">
+        <div class="health-head">
+          <div>
+            <h2 class="card-title">System Health</h2>
+            <p class="card-subtitle">Live status of the FastAPI backend, checked via <span class="mono">GET /health</span>.</p>
+          </div>
+          <button class="btn btn-secondary" id="healthRefreshBtn">Refresh Health</button>
+        </div>
+
+        <div class="health-status">
+          <span id="healthDot" class="status-dot status-unknown status-dot-lg"></span>
+          <span id="healthText" class="health-text">Checking&hellip;</span>
+        </div>
+
+        <table class="kv-table">
+          <tbody>
+            <tr><td>Endpoint</td><td class="mono">http://127.0.0.1:8001/health</td></tr>
+            <tr><td>Last checked</td><td class="mono" id="healthLastChecked">&mdash;</td></tr>
+            <tr><td>Latency</td><td class="mono" id="healthLatency">&mdash;</td></tr>
+          </tbody>
+        </table>
+
+        <details class="raw-details">
+          <summary>Raw response</summary>
+          <pre id="healthRaw" class="raw-pre"></pre>
+        </details>
+
+        <div class="error-box" id="healthError" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===================== METRICS VIEW ===================== -->
+    <section class="view" id="view-metrics">
+      <div class="card">
+        <div class="health-head">
+          <div>
+            <h2 class="card-title">API Metrics</h2>
+            <p class="card-subtitle">Live Prometheus metrics scraped from <span class="mono">GET /metrics</span>.</p>
+          </div>
+          <button class="btn btn-secondary" id="metricsRefreshBtn">Refresh Metrics</button>
+        </div>
+
+        <div class="grid grid-3" id="metricsSummary"></div>
+
+        <h3 class="subheading">Key Metrics</h3>
+        <div class="table-wrap">
+          <table class="metrics-table" id="metricsTable">
+            <thead>
+              <tr><th>Metric</th><th>Labels</th><th>Value</th></tr>
+            </thead>
+            <tbody id="metricsTableBody"></tbody>
+          </table>
+        </div>
+
+        <details class="raw-details">
+          <summary>Raw Metrics (full Prometheus text output)</summary>
+          <pre id="metricsRaw" class="raw-pre raw-pre-scroll"></pre>
+        </details>
+
+        <div class="error-box" id="metricsError" hidden></div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
